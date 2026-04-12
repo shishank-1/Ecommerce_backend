@@ -126,8 +126,3 @@ spring.jpa.hibernate.ddl-auto=update
 
 ---
 
-## 👨‍💻 Author
-
-Shadow
-
----
