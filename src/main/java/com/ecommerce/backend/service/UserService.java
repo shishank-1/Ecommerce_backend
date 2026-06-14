@@ -1,6 +1,7 @@
 package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.dto.*;
+import com.ecommerce.backend.entity.Role;
 import com.ecommerce.backend.entity.User;
 import com.ecommerce.backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,7 @@ public class UserService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER)
                 .build();
 
         User saved = repository.save(user);

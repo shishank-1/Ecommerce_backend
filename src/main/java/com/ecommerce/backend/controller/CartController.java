@@ -2,6 +2,7 @@ package com.ecommerce.backend.controller;
 
 import com.ecommerce.backend.dto.*;
 import com.ecommerce.backend.service.CartService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class CartController {
     }
 
     @PostMapping
-    public CartResponse addToCart(@RequestBody CartRequest request) {
+    public CartResponse addToCart(@Valid @RequestBody CartRequest request) {
         return service.addToCart(request);
     }
 

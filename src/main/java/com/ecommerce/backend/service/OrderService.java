@@ -6,7 +6,9 @@ import com.ecommerce.backend.exception.BadRequestException;
 import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ public class OrderService {
         this.productRepo = productRepo;
     }
 
+    @Transactional
     public OrderResponse placeOrder(Long userId) {
 
         User user = userRepo.findById(userId)
@@ -40,7 +43,7 @@ public class OrderService {
             throw new BadRequestException("Cart is empty");
         }
 
-        double total = 0;
+        BigDecimal total = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
 
         for (CartItem cart : cartItems) {
@@ -59,7 +62,7 @@ public class OrderService {
             item.setQuantity(cart.getQuantity());
             item.setPrice(product.getPrice());
 
-            total += cart.getQuantity() * product.getPrice();
+            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(cart.getQuantity())));
 
             orderItems.add(item);
         }

@@ -3,6 +3,8 @@ package com.ecommerce.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -14,7 +16,8 @@ public class OrderItem {
     private Long id;
 
     private int quantity;
-    private double price;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     // Many items → one order
     @ManyToOne

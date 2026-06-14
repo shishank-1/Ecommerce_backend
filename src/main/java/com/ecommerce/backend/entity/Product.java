@@ -4,6 +4,8 @@ package com.ecommerce.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor
@@ -15,6 +17,7 @@ public class Product {
     private Long id;
 
     private String name;
-    private double price;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
     private int quantity;
 }
