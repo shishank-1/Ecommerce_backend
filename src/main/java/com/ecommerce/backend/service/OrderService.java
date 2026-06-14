@@ -2,6 +2,8 @@ package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.dto.OrderResponse;
 import com.ecommerce.backend.entity.*;
+import com.ecommerce.backend.exception.BadRequestException;
+import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -15,25 +17,27 @@ public class OrderService {
     private final CartItemRepository cartRepo;
     private final OrderRepository orderRepo;
     private final UserRepository userRepo;
+    private final ProductRepository productRepo;
 
     public OrderService(CartItemRepository cartRepo,
                         OrderRepository orderRepo,
-                        UserRepository userRepo) {
+                        UserRepository userRepo,
+                        ProductRepository productRepo) {
         this.cartRepo = cartRepo;
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
+        this.productRepo = productRepo;
     }
 
-    // 🧾 Place Order
     public OrderResponse placeOrder(Long userId) {
 
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<CartItem> cartItems = cartRepo.findByUserId(userId);
 
         if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new BadRequestException("Cart is empty");
         }
 
         double total = 0;
@@ -41,12 +45,21 @@ public class OrderService {
 
         for (CartItem cart : cartItems) {
 
-            OrderItem item = new OrderItem();
-            item.setProduct(cart.getProduct());
-            item.setQuantity(cart.getQuantity());
-            item.setPrice(cart.getProduct().getPrice());
+            Product product = cart.getProduct();
 
-            total += cart.getQuantity() * cart.getProduct().getPrice();
+            if (cart.getQuantity() > product.getQuantity()) {
+                throw new BadRequestException("Not enough stock for product: " + product.getName());
+            }
+
+            product.setQuantity(product.getQuantity() - cart.getQuantity());
+            productRepo.save(product);
+
+            OrderItem item = new OrderItem();
+            item.setProduct(product);
+            item.setQuantity(cart.getQuantity());
+            item.setPrice(product.getPrice());
+
+            total += cart.getQuantity() * product.getPrice();
 
             orderItems.add(item);
         }
@@ -55,10 +68,8 @@ public class OrderService {
         order.setUser(user);
         order.setTotalAmount(total);
 
-        // save order first
         Order savedOrder = orderRepo.save(order);
 
-        // link order items
         for (OrderItem item : orderItems) {
             item.setOrder(savedOrder);
         }
@@ -66,7 +77,6 @@ public class OrderService {
         savedOrder.setItems(orderItems);
         orderRepo.save(savedOrder);
 
-        // 🧹 Clear cart
         cartRepo.deleteAll(cartItems);
 
         return new OrderResponse(
@@ -78,7 +88,6 @@ public class OrderService {
         );
     }
 
-    // 📦 Order History
     public List<OrderResponse> getOrders(Long userId) {
 
         return orderRepo.findByUserId(userId)

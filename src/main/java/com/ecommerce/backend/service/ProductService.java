@@ -3,6 +3,7 @@ package com.ecommerce.backend.service;
 import com.ecommerce.backend.dto.ProductRequest;
 import com.ecommerce.backend.dto.ProductResponse;
 import com.ecommerce.backend.entity.Product;
+import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ public class ProductService {
 
     public ProductResponse getProductById(Long id) {
         Product p = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return new ProductResponse(
                 p.getId(),

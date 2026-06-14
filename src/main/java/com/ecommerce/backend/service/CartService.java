@@ -2,6 +2,7 @@ package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.dto.*;
 import com.ecommerce.backend.entity.*;
+import com.ecommerce.backend.exception.ResourceNotFoundException;
 import com.ecommerce.backend.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +28,10 @@ public class CartService {
     public CartResponse addToCart(CartRequest request) {
 
         User user = userRepo.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Product product = productRepo.findById(request.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         CartItem item = new CartItem(
                 null,
